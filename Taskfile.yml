@@ -1,0 +1,91 @@
+version: "3"
+
+vars:
+  GO_VERSION: "1.26"
+  MIGRATION_NAME: '{{.MIGRATION_NAME | default "new_migration"}}'
+  DB_CONN_DEV: "host=localhost user=postgres password=postgres port=7111 dbname=fitnow sslmode=disable"
+  DB_CONN_PROD: "host={{.DB_HOST_PROD}} user={{.DB_USER_PROD}} password={{.DB_PASSWORD_PROD}} port={{.DB_PORT_PROD}} dbname={{.DB_NAME_PROD}} sslmode=disable"
+
+tasks:
+  swag:
+    desc: "Generate swagger docs"
+    cmds:
+      - swag init -g cmd/main/main.go
+
+  build:
+    desc: "Build app"
+    cmds:
+      - go build -o ./.bin/main ./cmd/main/main.go
+
+  run:
+    desc: "Build and run app"
+    deps: [build]
+    cmds:
+      - ./.bin/main
+
+  gql:
+    desc: "Generate gqlgen code"
+    cmds:
+      - go get github.com/99designs/gqlgen@latest
+      - go run github.com/99designs/gqlgen generate
+
+  migrate-dev-up:
+    desc: "Run dev migrations up"
+    cmds:
+      - goose -dir migrations/pg postgres "{{.DB_CONN_DEV}}" up
+
+  migrate-dev-down:
+    desc: "Run dev migrations down"
+    cmds:
+      - goose -dir migrations/pg postgres "{{.DB_CONN_DEV}}" down
+
+  migrate-dev-status:
+    desc: "Dev migrations status"
+    cmds:
+      - goose -dir migrations/pg postgres "{{.DB_CONN_DEV}}" status
+
+  migrate-new:
+    desc: "Create new migration (use: task migrate-new MIGRATION_NAME=name)"
+    cmds:
+      - goose -dir migrations/pg create {{.MIGRATION_NAME}} sql
+
+  migrate-prod-up:
+    desc: "Run prod migrations up"
+    cmds:
+      - goose -dir migrations/pg postgres "{{.DB_CONN_PROD}}" up
+
+  migrate-prod-down:
+    desc: "Run prod migrations down"
+    cmds:
+      - goose -dir migrations/pg postgres "{{.DB_CONN_PROD}}" down
+
+  migrate-prod-status:
+    desc: "Prod migrations status"
+    cmds:
+      - goose -dir migrations/pg postgres "{{.DB_CONN_PROD}}" status
+
+  docker-build:
+    desc: "Build docker image"
+    cmds:
+      - docker build -t candles .
+
+  docker:
+    desc: "Start docker-compose"
+    cmds:
+      - docker-compose up -d
+
+  docker-app:
+    desc: "Build image and start docker-compose"
+    deps: [docker-build]
+    cmds:
+      - docker-compose up -d
+
+  compose-prod:
+    desc: "Start prod docker-compose"
+    cmds:
+      - docker compose -f docker-compose.prod.yaml up --build -d
+
+  seed:
+    desc: "Run seed"
+    cmds:
+      - go run cmd/seed/main.go
