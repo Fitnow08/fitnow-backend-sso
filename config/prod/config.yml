@@ -1,0 +1,50 @@
+env: "development"
+
+database:
+  host: ${STATS_HOST}
+  port:  ${STATS_PORT}
+  user: ${STATS_USER}
+  password: ${STATS_PASSWORD}
+  dbname: ${STATS_DB}
+  max_attempts: 5
+  ssl: disable
+
+casbin:
+  casbin_path: "config/prod/casbin.conf"
+  casbin_policy_path: "config/prod/policy.csv"
+
+ats_database:
+  host: ${ATSDB_HOST}
+  port: ${ATSDB_PORT}
+  user: ${ATSDB_USER}
+  password: ${ATSDB_PASSWORD}
+  dbname: ${ATSDB_DB}
+  max_attempts: 5
+
+clients:
+  employee_client:
+    address: "${EMPLOYEE_HOST}:${EMPLOYEE_PORT}"
+    timeout: 5s
+    retries: 5
+    insecure: true
+  department_client:
+    address: "${DEPARTMENT_HOST}:${DEPARTMENT_PORT}"
+    timeout: 5s
+    retries: 5
+    insecure: true
+  sso_client:
+    address: "${SSO_HOST}:${SSO_PORT}"
+    timeout: 5s
+    retries: 5
+    insecure: true
+
+http_server:
+  host: 0.0.0.0
+  port: ${HTTP_PORT}
+  timeout: 120s
+  debug: true
+  idle_timeout: 60s
+
+graylog:
+  host: 127.0.0.1
+  port: 12201

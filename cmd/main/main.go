@@ -1,7 +1,23 @@
 package main
 
-import "log/slog"
+import (
+	"context"
+	app "github.com/Fitnow08/fitnow-backend-sso/internal/app"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+)
 
 func main() {
-	slog.Info("hello world")
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
+	defer cancel()
+	apps, err := app.NewApp(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	apps.Log.Info("Starting apps..")
+	apps.GRPCServer.MustRun()
+	<-ctx.Done()
+	apps.GRPCServer.Stop()
 }

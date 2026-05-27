@@ -1,0 +1,25 @@
+env: "development"
+
+database:
+  host: localhost
+  port: "7111"
+  user: "postgres"
+  password: "postgres"
+  dbname: "fitnow"
+  max_attempts: 5
+  ssl: disable
+
+redis:
+  host: localhost
+  port: "6379"
+  password: ""
+  db: 0
+  retries: 5
+
+grpc:
+  host: localhost
+  port: "44044"
+  timeout: 10s
+
+
+
