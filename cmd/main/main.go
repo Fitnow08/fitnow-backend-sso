@@ -17,9 +17,20 @@ func main() {
 		log.Fatal(err)
 	}
 	apps.Log.Info("Starting apps..")
-	go apps.GRPCServer.MustRun()
-	<-ctx.Done()
+	errCh := make(chan error, 1)
+	go func() {
+		if err := apps.GRPCServer.Run(); err != nil {
+			errCh <- err
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+	case err := <-errCh:
+		apps.Log.Error("grpc server failed", "err", err)
+	}
 	apps.GRPCServer.Stop()
+	defer apps.CancelLogger()
 	if err := apps.DB.Close(); err != nil {
 		apps.Log.Error("failed to close databases", "err", err.Error())
 	}
