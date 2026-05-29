@@ -15,6 +15,16 @@ type Config struct {
 	DB      PrimaryDB `yaml:"database"`
 	RedisDB Redis     `yaml:"redis"`
 	GRPC    GRPC      `yaml:"grpc"`
+	Mail    Mail      `yaml:"mail"`
+}
+
+type Mail struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	From     string `yaml:"from"`
+	SSL      bool   `yaml:"ssl"`
 }
 
 type PrimaryDB struct {

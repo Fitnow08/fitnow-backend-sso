@@ -13,17 +13,21 @@ type App struct {
 	Log          *slog.Logger
 	Cfg          *config.Config
 	GRPCServer   *grpcserver.GRPCServer
+	DB           *Database
 	CancelLogger func()
 }
 
 func NewApp(ctx context.Context) (*App, error) {
 	cfg := config.InitConfig()
 	l, cancelogger := logger.SetupLogger(ctx, cfg.Env, fmt.Sprintf("%s:%s", "", ""))
-	_, err := NewDataBases(cfg, l)
+	databases, err := NewDataBases(cfg, l)
 	if err != nil {
 		return nil, err
 	}
-	GRPCServer, err := grpcserver.NewGRPCServer(l, cfg.GRPC.Port)
+
+	repo := NewRepositories(l, databases)
+	srv := NewServices(l, cfg, repo)
+	GRPCServer, err := grpcserver.NewGRPCServer(l, cfg.GRPC.Port, srv.AuthService)
 	if err != nil {
 		return nil, err
 	}
@@ -32,5 +36,6 @@ func NewApp(ctx context.Context) (*App, error) {
 		Cfg:          cfg,
 		CancelLogger: cancelogger,
 		GRPCServer:   GRPCServer,
+		DB:           databases,
 	}, nil
 }

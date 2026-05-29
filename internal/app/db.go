@@ -35,5 +35,5 @@ func NewDataBases(cfg *config.Config, log *slog.Logger) (*Database, error) {
 
 func (databases *Database) Close() error {
 	databases.PrimaryDB.Close()
-	return nil
+	return databases.RedisDB.Close()
 }

@@ -27,7 +27,7 @@ func interceptorLogger(l *slog.Logger) logging.Logger {
 	})
 }
 
-func NewGRPCServer(log *slog.Logger, grpcPort string) (*GRPCServer, error) {
+func NewGRPCServer(log *slog.Logger, grpcPort string, service auth.AuthService) (*GRPCServer, error) {
 	recoveryOpts := []recovery.Option{
 		recovery.WithRecoveryHandlerContext(func(ctx context.Context, p any) error {
 			log.Error("recovered from panic", "panic", p)
@@ -45,7 +45,7 @@ func NewGRPCServer(log *slog.Logger, grpcPort string) (*GRPCServer, error) {
 			logging.UnaryServerInterceptor(interceptorLogger(log), loggingOpts...),
 		),
 	)
-	auth.RegisterGrpcServer(gRPCServer)
+	auth.RegisterGrpcServer(gRPCServer, service, log)
 	reflection.Register(gRPCServer)
 	return &GRPCServer{GRPCServer: gRPCServer, log: log, port: grpcPort}, nil
 }
@@ -74,5 +74,5 @@ func (a *GRPCServer) Stop() {
 	const op = "grpcapp.Stop"
 	log := a.log.With("op", op, "port", a.port)
 	log.Info("stopping grpc server")
-	a.GRPCServer.Stop()
+	a.GRPCServer.GracefulStop()
 }

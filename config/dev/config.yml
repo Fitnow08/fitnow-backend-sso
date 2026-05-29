@@ -21,5 +21,13 @@ grpc:
   port: "44044"
   timeout: 10s
 
+mail:
+  host: ${EMAIL_SERVER_HOST}
+  port: ${EMAIL_SERVER_PORT}
+  user: ${EMAIL_SERVER_USER}
+  password: ${EMAIL_SERVER_PASSWORD}
+  from: ${EMAIL_FROM}
+  ssl: true
+
 
 

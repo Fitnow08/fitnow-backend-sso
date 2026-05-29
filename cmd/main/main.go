@@ -17,7 +17,11 @@ func main() {
 		log.Fatal(err)
 	}
 	apps.Log.Info("Starting apps..")
-	apps.GRPCServer.MustRun()
+	go apps.GRPCServer.MustRun()
 	<-ctx.Done()
 	apps.GRPCServer.Stop()
+	if err := apps.DB.Close(); err != nil {
+		apps.Log.Error("failed to close databases", "err", err.Error())
+	}
+	apps.Log.Info("apps stopped")
 }

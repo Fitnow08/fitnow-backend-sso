@@ -146,6 +146,8 @@ func (h *GraylogHandler) Handle(_ context.Context, r slog.Record) error {
 			fields["_"+a.Key] = val()
 		case time.Time:
 			fields["_"+a.Key] = val.Unix() // или .Format(time.RFC3339)
+		case error:
+			fields["_"+a.Key] = val.Error()
 		default:
 			fields["_"+a.Key] = val
 		}

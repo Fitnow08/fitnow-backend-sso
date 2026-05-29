@@ -48,13 +48,12 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 	fields := make(map[string]any, r.NumAttrs())
 
 	r.Attrs(func(a slog.Attr) bool {
-		fields[a.Key] = a.Value.Any()
-
+		fields[a.Key] = resolveAttrValue(a.Value.Any())
 		return true
 	})
 
 	for _, a := range h.attrs {
-		fields[a.Key] = a.Value.Any()
+		fields[a.Key] = resolveAttrValue(a.Value.Any())
 	}
 
 	var b []byte
@@ -92,5 +91,16 @@ func (h *PrettyHandler) WithGroup(name string) slog.Handler {
 	return &PrettyHandler{
 		Handler: h.Handler.WithGroup(name),
 		l:       h.l,
+	}
+}
+
+// resolveAttrValue приводит значения, которые плохо сериализуются в JSON
+// (в первую очередь error с неэкспортируемыми полями) к читаемой строке.
+func resolveAttrValue(v any) any {
+	switch val := v.(type) {
+	case error:
+		return val.Error()
+	default:
+		return v
 	}
 }
