@@ -98,7 +98,7 @@ func (h *Handler) ResendVerifyCode(ctx context.Context, request *authv1.ResendVe
 		log.Error(err.Error())
 		return nil, err
 	}
-	return &authv1.ResendVerifyCodeResponse{}, nil
+	return &authv1.ResendVerifyCodeResponse{Ok: true}, nil
 }
 
 func (h *Handler) ResetPassword(ctx context.Context, request *authv1.ResetPasswordRequest) (*authv1.ResetPasswordResponse, error) {
