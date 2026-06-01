@@ -10,6 +10,10 @@ github.com/Fitnow08/fitnow-proto v0.0.0-20260529005730-d110d48173f1 h1:ht2szWbvZ
 github.com/Fitnow08/fitnow-proto v0.0.0-20260529005730-d110d48173f1/go.mod h1:Y/PBYN29qmGtoY33JueQRQKMl17Z7YZXWW8n3fzRVXo=
 github.com/Fitnow08/fitnow-proto v0.0.0-20260529005924-5c1d6767981a h1:b0X0a+p7cJS5ollHa9AAoQESfPDbA3ez+MYrWv4j3bM=
 github.com/Fitnow08/fitnow-proto v0.0.0-20260529005924-5c1d6767981a/go.mod h1:Y/PBYN29qmGtoY33JueQRQKMl17Z7YZXWW8n3fzRVXo=
+github.com/Fitnow08/fitnow-proto v0.0.0-20260601072713-80eb827e8618 h1:Cyznwjl3LXNDNcR8ri3FDeeC7fXtbMsOMe+NAnL6BG4=
+github.com/Fitnow08/fitnow-proto v0.0.0-20260601072713-80eb827e8618/go.mod h1:Y/PBYN29qmGtoY33JueQRQKMl17Z7YZXWW8n3fzRVXo=
+github.com/Fitnow08/fitnow-proto v0.0.0-20260601093949-a51d09560485 h1:xihJGYJvyFBd16M+8bAVPKF4Q2WwIa0GfM9BiZOqTU4=
+github.com/Fitnow08/fitnow-proto v0.0.0-20260601093949-a51d09560485/go.mod h1:Y/PBYN29qmGtoY33JueQRQKMl17Z7YZXWW8n3fzRVXo=
 github.com/Masterminds/squirrel v1.5.4 h1:uUcX/aBc8O7Fg9kaISIUsHXdKuqehiXAMQTYX8afzqM=
 github.com/Masterminds/squirrel v1.5.4/go.mod h1:NNaOrjSoIDfDA40n7sr2tPNZRfjzjA400rg+riTZj10=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=

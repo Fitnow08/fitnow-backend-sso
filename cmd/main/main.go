@@ -17,18 +17,13 @@ func main() {
 		log.Fatal(err)
 	}
 	apps.Log.Info("Starting apps..")
-	errCh := make(chan error, 1)
+
 	go func() {
-		if err := apps.GRPCServer.Run(); err != nil {
-			errCh <- err
-		}
+		apps.GRPCServer.MustRun()
 	}()
 
-	select {
-	case <-ctx.Done():
-	case err := <-errCh:
-		apps.Log.Error("grpc server failed", "err", err)
-	}
+	<-ctx.Done()
+
 	apps.GRPCServer.Stop()
 	defer apps.CancelLogger()
 	if err := apps.DB.Close(); err != nil {

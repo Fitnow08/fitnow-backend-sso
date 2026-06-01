@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Fitnow08/fitnow-backend-sso/internal/models/domain"
+	authv1 "github.com/Fitnow08/fitnow-proto/pkg/gen/go/v1/auth"
+	"github.com/google/uuid"
 	"math/rand/v2"
 	"time"
 
@@ -17,6 +19,8 @@ type AuthRepository interface {
 	UserByEmail(ctx context.Context, email string) (*UserDB, error)
 	SetVerifyAccount(ctx context.Context, email string) error
 	UpdateUserPassword(ctx context.Context, email string, password []byte) error
+	GetAllUsers(ctx context.Context) ([]*UserDB, error)
+	GetUserById(ctx context.Context, id uuid.UUID) (*UserDB, error)
 }
 
 type MailSender interface {
@@ -105,6 +109,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (*domain.Us
 		ID:           user.ID,
 		Email:        user.Email,
 		Title:        user.Title,
+		Role:         user.Role,
 		AccessToken:  access,
 		RefreshToken: refresh,
 	}, nil
@@ -171,13 +176,23 @@ func (s *Service) VerifyAccount(ctx context.Context, email string, code int) (*d
 		ID:           user.ID,
 		Email:        user.Email,
 		Title:        user.Title,
+		Role:         user.Role,
 		AccessToken:  access,
 		RefreshToken: refresh,
 	}, nil
 }
+
 func (s *Service) ResendCode(ctx context.Context, email string) error {
 	const op = "Auth.Service.ResendCode"
 	log := s.log.With("op", op)
+	olduser, err := s.authrepository.UserByEmail(ctx, email)
+	if err != nil {
+		slog.Error("failed to get user by email", "error", err)
+		return err
+	}
+	if olduser == nil {
+		return errors.New("user not found")
+	}
 	if err := s.verifyrepo.Delete(ctx, email); err != nil {
 		log.Error("failed to delete verify code", "error", err)
 		return err
@@ -192,7 +207,7 @@ func (s *Service) ResendCode(ctx context.Context, email string) error {
 		sendCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		if err := s.mailer.SendVerifyCode(sendCtx, email, code); err != nil {
-			s.log.Error("failed to send verify code", "error", err, "email", email)
+			log.Error("failed to send verify code", "error", err, "email", email)
 		}
 	}()
 	return nil
@@ -252,4 +267,41 @@ func (s *Service) ConfirmResetPassword(ctx context.Context, email string, newPas
 		return err
 	}
 	return nil
+}
+
+func (s *Service) GetAllUsers(ctx context.Context) ([]*authv1.User, error) {
+	const op = "Auth.Service.GetAllUsers"
+	log := s.log.With("op", op)
+	users, err := s.authrepository.GetAllUsers(ctx)
+	if err != nil {
+		log.Error("failed to get all users", "error", err)
+		return nil, err
+	}
+	newusers := make([]*authv1.User, 0, len(users))
+	for _, user := range users {
+		newusers = append(newusers, &authv1.User{
+			Id:    user.ID.String(),
+			Email: user.Email,
+			Title: user.Title,
+			Role:  user.Role,
+		})
+	}
+	return newusers, nil
+}
+
+func (s *Service) GetUserById(ctx context.Context, id uuid.UUID) (*authv1.User, error) {
+
+	const op = "Auth.Service.GetUserById"
+	log := s.log.With("op", op)
+
+	user, err := s.authrepository.GetUserById(ctx, id)
+	if err != nil {
+		log.Error("failed to get user by id", "error", err)
+	}
+	return &authv1.User{
+		Id:    user.ID.String(),
+		Email: user.Email,
+		Title: user.Title,
+		Role:  user.Role,
+	}, nil
 }

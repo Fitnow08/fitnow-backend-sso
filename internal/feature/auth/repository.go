@@ -18,6 +18,7 @@ type UserDB struct {
 	Email    string    `json:"email" db:"email"`
 	Password []byte    `json:"password" db:"password"`
 	Title    string    `json:"title" db:"title"`
+	Role     string    `json:"role" db:"role"`
 }
 
 func NewRepository(log *slog.Logger, db *pgxpool.Pool) *Repository {
@@ -66,23 +67,88 @@ func (r *Repository) UserByEmail(ctx context.Context, email string) (*UserDB, er
 	}
 	defer conn.Release()
 	query, args, err := sq.
-		Select("id,password,email,title").
+		Select(
+			"users.id",
+			"users.password",
+			"users.email",
+			"users.title",
+			"r.name as role",
+		).
 		From("users").
+		Join("roles r ON users.role_id = r.id").
 		Where(sq.Eq{"email": email}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
+
 	if err != nil {
 		r.log.Warn("failed get user by email", "error", err.Error())
 		return nil, err
 	}
 	var user UserDB
-	if err := r.db.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Password, &user.Email, &user.Title); err != nil {
+	if err := r.db.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Password, &user.Email, &user.Title, &user.Role); err != nil {
 		r.log.Error("failed get user by email sql", "error", err.Error())
 		return nil, err
 	}
 	return &user, nil
 }
 
+func (r *Repository) GetAllUsers(ctx context.Context) ([]*UserDB, error) {
+	query, args, err := sq.Select("users.id",
+		"users.password",
+		"users.email",
+		"users.title",
+		"r.name as role").
+		From("users").
+		Join("roles r ON users.role_id = r.id").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		r.log.Warn("failed get all users", "error", err.Error())
+		return nil, err
+	}
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		r.log.Warn("failed get all users", "error", err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+	users := make([]*UserDB, 0)
+	for rows.Next() {
+		var user UserDB
+		if err := rows.Scan(&user.ID, &user.Password, &user.Email, &user.Title, &user.Role); err != nil {
+			r.log.Warn("failed get all users", "error", err.Error())
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+	if err := rows.Err(); err != nil {
+		r.log.Warn("failed get all users", "error", err.Error())
+		return nil, err
+	}
+	return users, nil
+}
+func (r *Repository) GetUserById(ctx context.Context, id uuid.UUID) (*UserDB, error) {
+	query, args, err := sq.Select("users.id",
+		"users.password",
+		"users.email",
+		"users.title",
+		"r.name as role").
+		From("users").
+		Join("roles r ON users.role_id = r.id").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		r.log.Warn("failed get user by id", "error", err.Error())
+		return nil, err
+	}
+	var user UserDB
+	if err := r.db.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Password, &user.Email, &user.Title, &user.Role); err != nil {
+		r.log.Error("failed get user by email sql", "error", err.Error())
+		return nil, err
+	}
+	return &user, nil
+}
 func (r *Repository) UpdateUserPassword(ctx context.Context, email string, password []byte) error {
 	query, args, err := sq.Update(constants.UsersTableName).
 		Set("password", password).

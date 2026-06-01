@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Fitnow08/fitnow-backend-sso/internal/models/domain"
 	authv1 "github.com/Fitnow08/fitnow-proto/pkg/gen/go/v1/auth"
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"log/slog"
 )
@@ -16,6 +17,8 @@ type AuthService interface {
 	ResendCode(ctx context.Context, email string) error
 	ResetPassword(ctx context.Context, email string) error
 	ConfirmResetPassword(ctx context.Context, email string, newPassword string, code int) error
+	GetAllUsers(ctx context.Context) ([]*authv1.User, error)
+	GetUserById(ctx context.Context, id uuid.UUID) (*authv1.User, error)
 }
 type Handler struct {
 	authv1.UnimplementedAuthServiceServer
@@ -36,10 +39,10 @@ func (h *Handler) Login(ctx context.Context, request *authv1.LoginRequest) (*aut
 		log.Error(err.Error())
 		return nil, err
 	}
-
 	return &authv1.LoginResponse{
 		Email:        user.Email,
 		Title:        user.Title,
+		Role:         user.Role,
 		Id:           user.ID.String(),
 		AccessToken:  user.AccessToken,
 		RefreshToken: user.RefreshToken,
@@ -87,6 +90,7 @@ func (h *Handler) VerifyAccount(ctx context.Context, request *authv1.VerifyAccou
 		Email:        varifyac.Email,
 		Title:        varifyac.Title,
 		Id:           varifyac.ID.String(),
+		Role:         varifyac.Role,
 		AccessToken:  varifyac.AccessToken,
 		RefreshToken: varifyac.RefreshToken,
 	}, nil
@@ -118,4 +122,32 @@ func (h *Handler) ConfirmResetPassword(ctx context.Context, request *authv1.Conf
 		return nil, err
 	}
 	return &authv1.ConfirmResetPasswordResponse{Ok: true}, nil
+}
+
+func (h *Handler) GetAllUsers(ctx context.Context, request *authv1.GetAllUsersRequest) (*authv1.GetAllUsersResponse, error) {
+	const op = "Auth.Handler.GetAllUsers"
+	log := h.log.With(slog.String("op", op))
+	users, err := h.service.GetAllUsers(ctx)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	return &authv1.GetAllUsersResponse{Users: users}, nil
+}
+
+func (h *Handler) GetUserById(ctx context.Context, request *authv1.GetUserByIdRequest) (*authv1.GetUserByIdResponse, error) {
+	const op = "Auth.Handler.GetUserById"
+	log := h.log.With(slog.String("op", op))
+	iduuid, err := uuid.Parse(request.Id)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	user, err := h.service.GetUserById(ctx, iduuid)
+
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	return &authv1.GetUserByIdResponse{User: user}, nil
 }

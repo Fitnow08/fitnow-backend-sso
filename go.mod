@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/AfterShip/email-verifier v1.4.1
-	github.com/Fitnow08/fitnow-proto v0.0.0-20260529005924-5c1d6767981a
+	github.com/Fitnow08/fitnow-proto v0.0.0-20260601093949-a51d09560485
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/fatih/color v1.19.0
 	github.com/go-playground/validator/v10 v10.30.2
