@@ -1,50 +1,33 @@
 env: "development"
 
 database:
-  host: ${STATS_HOST}
-  port:  ${STATS_PORT}
-  user: ${STATS_USER}
-  password: ${STATS_PASSWORD}
-  dbname: ${STATS_DB}
-  max_attempts: 5
+  host: ${DB_HOST}
+  port: ${DB_PORT}
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+  dbname: ${DB_NAME}
+  max_attempts: ${DB_RETRIES}
   ssl: disable
 
-casbin:
-  casbin_path: "config/prod/casbin.conf"
-  casbin_policy_path: "config/prod/policy.csv"
+redis:
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT}
+  password: ${REDIS_PASSWORD}
+  db: 0
+  retries: ${REDIS_RETRIES}
 
-ats_database:
-  host: ${ATSDB_HOST}
-  port: ${ATSDB_PORT}
-  user: ${ATSDB_USER}
-  password: ${ATSDB_PASSWORD}
-  dbname: ${ATSDB_DB}
-  max_attempts: 5
+grpc:
+  host: localhost
+  port: "44044"
+  timeout: 10s
 
-clients:
-  employee_client:
-    address: "${EMPLOYEE_HOST}:${EMPLOYEE_PORT}"
-    timeout: 5s
-    retries: 5
-    insecure: true
-  department_client:
-    address: "${DEPARTMENT_HOST}:${DEPARTMENT_PORT}"
-    timeout: 5s
-    retries: 5
-    insecure: true
-  sso_client:
-    address: "${SSO_HOST}:${SSO_PORT}"
-    timeout: 5s
-    retries: 5
-    insecure: true
+mail:
+  host: ${EMAIL_SERVER_HOST}
+  port: ${EMAIL_SERVER_PORT}
+  user: ${EMAIL_SERVER_USER}
+  password: ${EMAIL_SERVER_PASSWORD}
+  from: ${EMAIL_FROM}
+  ssl: true
 
-http_server:
-  host: 0.0.0.0
-  port: ${HTTP_PORT}
-  timeout: 120s
-  debug: true
-  idle_timeout: 60s
 
-graylog:
-  host: 127.0.0.1
-  port: 12201
+

@@ -1,0 +1,11 @@
+services:
+  sso:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fitnow-sso
+    restart: always
+    env_file:
+      - .env.prod
+    ports:
+      - "44044:44044"
